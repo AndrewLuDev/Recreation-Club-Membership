@@ -1,9 +1,9 @@
 import os
 import getpass
-#from replit import db
+from replit import db
 
 allAccounts = []
-accounts = {}
+loginInfo = {}
 
 class accountInfo:
   def __init__(self, username, password, role, name, phone, paid, address):
@@ -27,6 +27,17 @@ def printSelections(selections):
 
 
 def main():
+    #clearAll()
+  
+    for user in db.keys():
+      db[user][0]
+      #tempUser = accountInfo(username, password, defaultRole, name, phone, paid, address)
+      tempUser = accountInfo(db[user][0], db[user][1], db[user][2], db[user][3], db[user][4], db[user][5], db[user][6])
+      allAccounts.append(tempUser)
+      #loginInfo[username] = password
+      loginInfo[db[user][0]] = db[user][1]
+
+      
     selection = ''
     selections = ["Create Account", "Login", "Quit"]
     while selection.lower() != 'q':
@@ -36,7 +47,7 @@ def main():
       selection = input("Selection Number: ")
       
       if selection == '1':
-        register()
+        register(loginInfo)
       elif selection == '2':
         login()
       elif selection == '3' or selection.lower() == 'q':
@@ -83,9 +94,9 @@ def makePayment(user):
   makePayment(user)
 
 
-def register():
+def register(loginInfo):
   username = input("Enter username: ")
-  while username in accounts.keys():  
+  while username in loginInfo.keys():  
     print ("Username is already taken.")
     username = input("Enter username: ")
     
@@ -93,8 +104,6 @@ def register():
   while len(password) < 8:     
     print("Password has to be greater than 8 characters.")
     password = getpass.getpass(prompt="Enter password: ")
-
-  accounts[username] = password
   
   defaultRole = "Member"
   name = input("Please enter your first and last name:\n")
@@ -103,31 +112,41 @@ def register():
   address = input("Please enter your address:\n")
   
   newUser = accountInfo(username, password, defaultRole, name, phone, paid, address)
+  
+  db[username] = [username, password, defaultRole, name, phone, paid, address]
+  #print(db[username])
+
   allAccounts.append(newUser)
+  loginInfo[username] = password
+  
+  for user in db.keys():
+    print(db[user][0], db[user][1])
+  
   
   print(f"ACCOUNT CREATED: for user {username}")
 
-  print(allAccounts)
-  print(newUser)
 
 def login():
   username = input("Enter username: ")
   password = getpass.getpass(prompt="Enter password: ")
   
-  if accounts[username] == password:
+  if loginInfo[username] == password:
       #success case
       print(f"LOGGED IN: Hello {username}.")
-      for item in allAccounts:
-        if item.role == "Member":
-          memberScreen(username)
- #     if allAccounts.role == 'Treasurer':
- #       treasurerScreen()
-  #    elif role == 'Coach':
-  #      coachScreen()
-  #    elif role == 'Member':
-  #      memberScreen()
+      for tempUser in allAccounts:
+        if tempUser.username == username:
+          if tempUser.role == "Member":
+            memberScreen(username)
+          elif tempUser.role == "Coach":
+            coachScreen(username)
+          elif tempUser.role == "Treasurer":
+            treasurerScreen(username)
   else:
       print(f"LOGIN FAILED: {username} is not registered or password is incorrect")
+
+def clearAll():
+  for key in db.keys():
+    del db[key]
 
 
 main()
